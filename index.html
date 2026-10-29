@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>glb viewer</title>
+  <style>
+    html, body { margin: 0; height: 100%; background: #ccd8e6; overflow: hidden; font: 15px system-ui, sans-serif; }
+    #bevy { display: block; width: 100%; height: 100%; outline: none; }
+    #loading { position: fixed; inset: 0; display: grid; place-items: center; color: #223; pointer-events: none; }
+  </style>
+</head>
+<body>
+  <canvas id="bevy" tabindex="0"></canvas>
+  <div id="loading">Loading (about 40 MB the first time)...</div>
+  <script type="module">
+    import init from "./glb-viewer.js";
+    const canvas = document.getElementById("bevy");
+    // Keys go to the canvas once it has focus; give it focus on any click.
+    canvas.addEventListener("pointerdown", () => canvas.focus());
+    canvas.addEventListener("contextmenu", (e) => e.preventDefault()); // right drag pans
+    init().catch((e) => {
+      // Bevy ends its event loop by throwing; anything else is a real error.
+      if (!String(e).includes("Using exceptions for control flow")) {
+        document.getElementById("loading").textContent = "Failed to start: " + e;
+        throw e;
+      }
+    });
+    // The first frame replaces the message.
+    const done = () => document.getElementById("loading").remove();
+    new MutationObserver(done).observe(canvas, { attributes: true, attributeFilter: ["width", "height"] });
+  </script>
+</body>
+</html>
